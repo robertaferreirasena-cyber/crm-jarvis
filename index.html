@@ -67,6 +67,20 @@
  .cx{background:var(--painel);border:1px dashed var(--linha,var(--borda));border-radius:14px;padding:22px;max-width:520px}
  .cx input{width:100%;background:var(--painel2);border:1px solid var(--borda);border-radius:8px;color:var(--fraco);padding:10px;margin:6px 0}
  .vazio{color:var(--fraco);text-align:center;padding:50px}
+ /* 100% responsivo - celular, tablet e desktop */
+ @media(max-width:680px){
+   header{padding:12px 14px;gap:10px}
+   h1{font-size:16px;letter-spacing:2px}
+   .sub{margin-left:0;width:100%;order:3}
+   nav{order:2;width:100%}
+   nav button{padding:7px 11px;font-size:12px}
+   main{padding:14px}
+   .kpi .n{font-size:24px}
+   .barra .lab{width:96px;font-size:12px}
+   .coluna{flex:0 0 82vw}
+   .modal{padding:12px}
+   .ficha{padding:16px}
+ }
 </style></head>
 <body>
 <header>
