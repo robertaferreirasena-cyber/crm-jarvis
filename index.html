@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="pt-BR"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CRM JARVIS</title>
+<style>
+ :root{--fundo:#070d18;--painel:#0d1a2c;--painel2:#0a1626;--borda:#16304f;
+   --texto:#eaf1fb;--fraco:#7793b0;--azul:#29b6ff;--verde:#3ddc84;--amarelo:#fbbf24;
+   --vermelho:#ff5547;--roxo:#8b7cff}
+ *{box-sizing:border-box;margin:0;padding:0}
+ body{background:var(--fundo);color:var(--texto);font:400 14px/1.5 "Segoe UI",system-ui,sans-serif}
+ a{color:var(--azul);text-decoration:none}
+ header{padding:16px 22px;border-bottom:1px solid var(--borda);display:flex;
+   align-items:center;gap:20px;flex-wrap:wrap;position:sticky;top:0;background:var(--fundo);z-index:20}
+ h1{font-size:18px;letter-spacing:3px;color:var(--azul)}
+ nav{display:flex;gap:6px;flex-wrap:wrap}
+ nav button{background:transparent;border:1px solid var(--borda);color:var(--fraco);
+   padding:8px 14px;border-radius:9px;cursor:pointer;font-size:13px}
+ nav button.on{background:rgba(41,182,255,.15);border-color:var(--azul);color:#fff}
+ .sub{color:var(--fraco);font-size:12px;margin-left:auto}
+ main{padding:22px}
+ .esconde{display:none}
+ /* metricas */
+ .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:22px}
+ .kpi{background:var(--painel);border:1px solid var(--borda);border-radius:14px;padding:16px}
+ .kpi .n{font-size:30px;font-weight:800}
+ .kpi .r{color:var(--fraco);font-size:12px;text-transform:uppercase;letter-spacing:1px;margin-top:4px}
+ .funil{background:var(--painel);border:1px solid var(--borda);border-radius:14px;padding:18px;margin-bottom:18px}
+ .funil h3{margin-bottom:14px;font-size:14px;color:var(--fraco);text-transform:uppercase;letter-spacing:1px}
+ .barra{display:flex;align-items:center;gap:12px;margin:8px 0}
+ .barra .lab{width:130px;font-size:13px;flex:none}
+ .barra .track{flex:1;background:var(--painel2);border-radius:8px;height:26px;overflow:hidden;border:1px solid var(--borda)}
+ .barra .fill{height:100%;background:linear-gradient(90deg,var(--azul),var(--verde));display:flex;align-items:center;padding:0 10px;font-size:12px;font-weight:600;color:#04110a;min-width:32px}
+ .barra .taxa{width:70px;text-align:right;color:var(--fraco);font-size:12px}
+ /* pipeline kanban */
+ .kanban{display:flex;gap:12px;overflow-x:auto;padding-bottom:16px}
+ .coluna{flex:0 0 260px;background:var(--painel2);border:1px solid var(--borda);border-radius:14px;padding:10px}
+ .coluna h4{font-size:12px;text-transform:uppercase;letter-spacing:1px;color:var(--fraco);
+   padding:6px 6px 10px;display:flex;justify-content:space-between}
+ .coluna.drag{border-color:var(--azul)}
+ .cartao{background:var(--painel);border:1px solid var(--borda);border-radius:11px;padding:11px 12px;margin-bottom:9px;cursor:grab}
+ .cartao:hover{border-color:var(--azul)}
+ .cartao h5{font-size:13px;margin-bottom:5px}
+ .cartao .meta{font-size:11px;color:var(--fraco)}
+ .temp{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px}
+ .temp.quente{background:var(--verde)} .temp.morno{background:var(--amarelo)} .temp.frio{background:var(--fraco)}
+ /* leads */
+ .busca{background:var(--painel2);border:1px solid var(--borda);border-radius:9px;padding:10px 12px;color:var(--texto);width:100%;max-width:340px;margin-bottom:16px;font-size:14px}
+ .grade{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+ .lcard{background:var(--painel);border:1px solid var(--borda);border-radius:13px;padding:14px;cursor:pointer}
+ .lcard:hover{border-color:var(--azul)}
+ .lcard h4{font-size:15px;margin-bottom:6px}
+ .lcard .tag{display:inline-block;font-size:10px;padding:2px 8px;border-radius:20px;border:1px solid var(--borda);color:var(--fraco);margin-top:6px}
+ /* modal */
+ .modal{position:fixed;inset:0;background:rgba(3,7,15,.75);display:none;align-items:center;justify-content:center;z-index:50;padding:20px}
+ .modal.on{display:flex}
+ .ficha{background:var(--painel);border:1px solid var(--borda);border-radius:16px;padding:22px;max-width:600px;width:100%;max-height:88vh;overflow:auto}
+ .ficha h2{font-size:20px;margin-bottom:4px}
+ .ficha .campo{margin:10px 0}
+ .ficha .campo b{color:var(--azul);font-size:11px;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:3px}
+ .ficha textarea{width:100%;background:var(--painel2);border:1px solid var(--borda);border-radius:8px;color:var(--texto);padding:10px;font-size:13px;min-height:70px;font-family:inherit}
+ .ficha select{background:var(--painel2);border:1px solid var(--borda);color:var(--texto);border-radius:8px;padding:8px}
+ .acoes{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+ .btn{background:rgba(41,182,255,.15);border:1px solid var(--azul);color:var(--texto);border-radius:8px;padding:8px 14px;cursor:pointer;font-size:13px}
+ .btn.z{border-color:#1f7a4d;color:var(--verde)}
+ .fechar{float:right;background:none;border:none;color:var(--fraco);font-size:22px;cursor:pointer}
+ /* conexao */
+ .cx{background:var(--painel);border:1px dashed var(--linha,var(--borda));border-radius:14px;padding:22px;max-width:520px}
+ .cx input{width:100%;background:var(--painel2);border:1px solid var(--borda);border-radius:8px;color:var(--fraco);padding:10px;margin:6px 0}
+ .vazio{color:var(--fraco);text-align:center;padding:50px}
+</style></head>
+<body>
+<header>
+  <h1>CRM JARVIS</h1>
+  <nav id="nav">
+    <button data-v="metricas" class="on">Métricas</button>
+    <button data-v="pipeline">Pipeline</button>
+    <button data-v="leads">Leads</button>
+    <button data-v="calls">Calls</button>
+    <button data-v="conexao">Conexão</button>
+  </nav>
+  <span class="sub">0 leads · 24/08/2026</span>
+</header>
+<main>
+  <section id="metricas"></section>
+  <section id="pipeline" class="esconde"></section>
+  <section id="leads" class="esconde"></section>
+  <section id="calls" class="esconde"></section>
+  <section id="conexao" class="esconde"></section>
+</main>
+
+<div class="modal" id="modal"><div class="ficha" id="ficha"></div></div>
+
+<script>
+const SEED = [];
+const ETAPAS = [["prospectado", "Prospectado"], ["contatado", "Contatado"], ["reuniao_marcada", "Reunião marcada"], ["reuniao_feita", "Reunião feita"], ["proposta", "Proposta"], ["fechado", "Fechado"], ["perdido", "Perdido"]];
+const CHAVE = "crm_jarvis_overrides";
+
+function overrides(){ try{return JSON.parse(localStorage.getItem(CHAVE))||{}}catch(e){return {}} }
+function salvar(ov){ localStorage.setItem(CHAVE, JSON.stringify(ov)); }
+function leads(){
+  const ov = overrides();
+  return SEED.map(l => {
+    const o = ov[l.id] || {};
+    return {...l, etapa: o.etapa || l.etapa, notas: (o.notas!==undefined?o.notas:l.notas)};
+  });
+}
+function setLead(id, campo, valor){
+  const ov = overrides(); ov[id] = ov[id]||{}; ov[id][campo]=valor; salvar(ov); render();
+}
+function esc(t){return (t||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+function rotulo(e){const m=ETAPAS.find(x=>x[0]===e);return m?m[1]:e}
+
+// ---- navegacao
+document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('#nav button').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on');
+  ['metricas','pipeline','leads','calls','conexao'].forEach(v=>
+    document.getElementById(v).classList.toggle('esconde', v!==b.dataset.v));
+  render();
+});
+
+function render(){
+  const view = document.querySelector('#nav button.on').dataset.v;
+  if(view==='metricas') renderMetricas();
+  if(view==='pipeline') renderPipeline();
+  if(view==='leads') renderLeads();
+  if(view==='calls') renderCalls();
+  if(view==='conexao') renderConexao();
+}
+
+// ---- metricas
+function renderMetricas(){
+  const L=leads(), total=L.length;
+  const cont={}; ETAPAS.forEach(e=>cont[e[0]]=0);
+  L.forEach(l=>cont[l.etapa]=(cont[l.etapa]||0)+1);
+  const fechados=cont['fechado']||0, reunioes=(cont['reuniao_feita']||0)+(cont['proposta']||0)+fechados;
+  const temps={quente:0,morno:0,frio:0};
+  L.forEach(l=>{const t=(l.qualificacao&&l.qualificacao.temperatura||'').toLowerCase();
+    if(t.includes('quente'))temps.quente++;else if(t.includes('morno'))temps.morno++;else if(t.includes('frio'))temps.frio++;});
+  const taxaR = total? Math.round(reunioes/total*100):0;
+  const taxaF = reunioes? Math.round(fechados/reunioes*100):0;
+  const maxN = Math.max(1,...ETAPAS.map(e=>cont[e[0]]));
+  let html=`<div class="kpis">
+    <div class="kpi"><div class="n">${total}</div><div class="r">Leads no total</div></div>
+    <div class="kpi"><div class="n">${reunioes}</div><div class="r">Chegaram à reunião</div></div>
+    <div class="kpi"><div class="n">${fechados}</div><div class="r">Fechados</div></div>
+    <div class="kpi"><div class="n">${taxaR}%</div><div class="r">Prospecção → Reunião</div></div>
+    <div class="kpi"><div class="n">${taxaF}%</div><div class="r">Reunião → Fechado</div></div>
+  </div>`;
+  html+=`<div class="funil"><h3>Funil por etapa</h3>`;
+  ETAPAS.forEach(e=>{const n=cont[e[0]]||0; const w=Math.round(n/maxN*100);
+    html+=`<div class="barra"><span class="lab">${e[1]}</span>
+      <div class="track"><div class="fill" style="width:${Math.max(w,n?8:0)}%">${n||''}</div></div>
+      <span class="taxa">${total?Math.round(n/total*100):0}%</span></div>`;});
+  html+=`</div>`;
+  html+=`<div class="funil"><h3>Temperatura dos leads</h3>
+    <div class="barra"><span class="lab">🔴 Quente</span><div class="track"><div class="fill" style="width:${temps.quente/maxN*100}%;background:var(--verde)">${temps.quente||''}</div></div><span class="taxa"></span></div>
+    <div class="barra"><span class="lab">🟡 Morno</span><div class="track"><div class="fill" style="width:${temps.morno/maxN*100}%;background:var(--amarelo)">${temps.morno||''}</div></div><span class="taxa"></span></div>
+    <div class="barra"><span class="lab">🔵 Frio</span><div class="track"><div class="fill" style="width:${temps.frio/maxN*100}%;background:var(--fraco)">${temps.frio||''}</div></div><span class="taxa"></span></div>
+  </div>`;
+  document.getElementById('metricas').innerHTML = html || '<div class="vazio">sem dados ainda</div>';
+}
+
+// ---- pipeline kanban
+function renderPipeline(){
+  const L=leads();
+  let html='<div class="kanban">';
+  ETAPAS.forEach(e=>{
+    const doGrupo=L.filter(l=>l.etapa===e[0]);
+    html+=`<div class="coluna" data-etapa="${e[0]}"
+       ondragover="event.preventDefault();this.classList.add('drag')"
+       ondragleave="this.classList.remove('drag')"
+       ondrop="soltar(event,'${e[0]}')">
+      <h4>${e[1]} <span>${doGrupo.length}</span></h4>`;
+    doGrupo.forEach(l=>{const t=(l.qualificacao&&l.qualificacao.temperatura||'').toLowerCase();
+      const cls=t.includes('quente')?'quente':t.includes('morno')?'morno':'frio';
+      html+=`<div class="cartao" draggable="true" ondragstart="pegar(event,'${l.id}')" onclick="abrir('${l.id}')">
+        <h5><span class="temp ${cls}"></span>${esc(l.nome)}</h5>
+        <div class="meta">${esc(l.categoria||'')}${l.telefone?' · '+esc(l.telefone):''}</div></div>`;});
+    html+='</div>';
+  });
+  html+='</div>';
+  document.getElementById('pipeline').innerHTML=html;
+}
+let arrastando=null;
+function pegar(ev,id){arrastando=id;}
+function soltar(ev,etapa){ev.preventDefault();document.querySelectorAll('.coluna').forEach(c=>c.classList.remove('drag'));
+  if(arrastando){setLead(arrastando,'etapa',etapa);arrastando=null;}}
+
+// ---- leads
+function renderLeads(){
+  const busca=(document.getElementById('busca-inp')?document.getElementById('busca-inp').value:'').toLowerCase();
+  const L=leads().filter(l=>!busca||(l.nome+' '+l.categoria+' '+(l.contexto||'')).toLowerCase().includes(busca));
+  let html=`<input class="busca" id="busca-inp" placeholder="buscar lead..." value="${esc(busca)}" oninput="renderLeads()"><div class="grade">`;
+  if(!L.length) html+='<div class="vazio">nenhum lead. Rode uma prospecção pra encher.</div>';
+  L.forEach(l=>{html+=`<div class="lcard" onclick="abrir('${l.id}')">
+    <h4>${esc(l.nome)}</h4>
+    <div class="meta" style="color:var(--fraco);font-size:12px">${esc(l.categoria||'')}${l.telefone?' · '+esc(l.telefone):''}</div>
+    <span class="tag">${esc(rotulo(l.etapa))}</span>${l.calls&&l.calls.length?' <span class="tag">📞 '+l.calls.length+'</span>':''}
+  </div>`;});
+  html+='</div>';
+  document.getElementById('leads').innerHTML=html;
+  if(busca){const i=document.getElementById('busca-inp');i.focus();i.setSelectionRange(i.value.length,i.value.length);}
+}
+
+// ---- calls
+function renderCalls(){
+  const L=leads(); let itens=[];
+  L.forEach(l=>(l.calls||[]).forEach(c=>itens.push({nome:l.nome,...c})));
+  let html='';
+  if(!itens.length) html='<div class="vazio">nenhuma call registrada ainda. Salve a ata numa reunião.</div>';
+  itens.forEach(c=>{const q=c.qualificacao||{};
+    html+=`<div class="lcard" style="margin-bottom:12px;cursor:default">
+      <h4>${esc(c.nome)} <span style="color:var(--fraco);font-weight:400;font-size:12px">· ${esc(c.data)}</span></h4>
+      ${q.dor?`<div style="margin-top:6px"><b style="color:var(--azul);font-size:11px">DOR</b> ${esc(q.dor)}</div>`:''}
+      ${q.proximo_passo?`<div><b style="color:var(--azul);font-size:11px">PRÓXIMO PASSO</b> ${esc(q.proximo_passo)}</div>`:''}
+      <div style="color:var(--fraco);font-size:12px;margin-top:8px">${esc((c.resumo||'').slice(0,300))}...</div>
+    </div>`;});
+  document.getElementById('calls').innerHTML=html;
+}
+
+// ---- conexao
+function renderConexao(){
+  document.getElementById('conexao').innerHTML=`<div class="cx">
+    <h2 style="margin-bottom:6px">🔌 Conexão — WhatsApp (Evolution API)</h2>
+    <p style="color:var(--fraco);margin-bottom:14px">Espaço reservado. Você pluga a sua Evolution API por último, e o JARVIS dispara follow-up dos leads por aqui.</p>
+    <input placeholder="EVOLUTION_URL (ex: https://sua-vps:8080)" disabled>
+    <input placeholder="EVOLUTION_INSTANCE" disabled>
+    <input placeholder="EVOLUTION_APIKEY" disabled>
+    <p style="color:var(--fraco);font-size:12px;margin-top:10px">Quando quiser ligar, é só me avisar que eu conecto no .env — em segurança, sem passar pela tela.</p>
+  </div>`;
+}
+
+// ---- modal ficha
+function abrir(id){
+  const l=leads().find(x=>x.id===id); if(!l) return;
+  const q=l.qualificacao||{};
+  const zap=(l.telefone||'').replace(/\D/g,'');
+  const rede=(l.rede_social||'').split(' ')[0];
+  let opts=ETAPAS.map(e=>`<option value="${e[0]}" ${e[0]===l.etapa?'selected':''}>${e[1]}</option>`).join('');
+  let html=`<button class="fechar" onclick="fechar()">×</button>
+    <h2>${esc(l.nome)}</h2>
+    <div style="color:var(--fraco);font-size:12px">${esc(l.categoria||'')}${l.origem?' · '+esc(l.origem):''}</div>
+    <div class="campo"><b>Etapa</b><select onchange="setLead('${l.id}','etapa',this.value)">${opts}</select></div>
+    <div class="acoes">
+      ${zap?`<a class="btn z" href="https://wa.me/55${zap}" target="_blank">WhatsApp</a>`:''}
+      ${l.telefone?`<a class="btn" href="tel:${zap}">${esc(l.telefone)}</a>`:''}
+      ${l.site?`<a class="btn" href="${esc(l.site)}" target="_blank">Site</a>`:''}
+      ${rede?`<a class="btn" href="${esc(rede)}" target="_blank">Rede</a>`:''}
+      ${l.maps?`<a class="btn" href="${esc(l.maps)}" target="_blank">Maps</a>`:''}
+    </div>
+    ${l.contexto?`<div class="campo"><b>Contexto</b>${esc(l.contexto)}</div>`:''}
+    ${l.endereco?`<div class="campo"><b>Endereço</b>${esc(l.endereco)}</div>`:''}`;
+  if(Object.keys(q).length){
+    html+=`<div class="campo"><b>Qualificação</b>`;
+    [['dor','Dor'],['orcamento','Orçamento'],['prazo','Prazo'],['decisor','Decisor'],['proximo_passo','Próximo passo'],['temperatura','Temperatura']].forEach(k=>{
+      if(q[k[0]]) html+=`<div style="margin:2px 0"><span style="color:var(--fraco)">${k[1]}:</span> ${esc(q[k[0]])}</div>`;});
+    html+=`</div>`;
+  }
+  html+=`<div class="campo"><b>Notas</b><textarea onchange="setLead('${l.id}','notas',this.value)" placeholder="anotações sobre o lead...">${esc(l.notas||'')}</textarea></div>`;
+  if(l.calls&&l.calls.length){html+=`<div class="campo"><b>Calls</b>`;
+    l.calls.forEach(c=>html+=`<div style="color:var(--fraco);font-size:12px;margin:4px 0">📞 ${esc(c.data)} — ${esc((c.resumo||'').slice(0,120))}...</div>`);
+    html+=`</div>`;}
+  document.getElementById('ficha').innerHTML=html;
+  document.getElementById('modal').classList.add('on');
+}
+function fechar(){document.getElementById('modal').classList.remove('on');render();}
+document.getElementById('modal').onclick=e=>{if(e.target.id==='modal')fechar();};
+
+render();
+</script>
+</body></html>
